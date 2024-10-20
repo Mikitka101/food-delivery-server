@@ -1,5 +1,10 @@
 package com.mikitayasiulevich
 
+import com.mikitayasiulevich.authentification.JwtService
+import com.mikitayasiulevich.data.repository.RestaurantRepositoryImpl
+import com.mikitayasiulevich.data.repository.UserRepositoryImpl
+import com.mikitayasiulevich.domain.usecase.RestaurantUseCase
+import com.mikitayasiulevich.domain.usecase.UserUseCase
 import com.mikitayasiulevich.plugins.*
 import com.mikitayasiulevich.plugins.DatabaseFactory.initializationDatabase
 import io.ktor.server.application.*
@@ -12,10 +17,17 @@ fun main() {
 }
 
 fun Application.module() {
+    val jwtService = JwtService()
+    val userRepository = UserRepositoryImpl()
+    val restaurantRepository = RestaurantRepositoryImpl()
+    val userUseCase = UserUseCase(userRepository, jwtService)
+    val restaurantUseCase = RestaurantUseCase(restaurantRepository)
+
+
     initializationDatabase()
     configureMonitoring()
     configureSerialization()
-    configureSecurity()
+    configureSecurity(userUseCase)
 
     /*
     configureRouting()

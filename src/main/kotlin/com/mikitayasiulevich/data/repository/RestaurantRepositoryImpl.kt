@@ -1,0 +1,72 @@
+package com.mikitayasiulevich.data.repository
+
+import com.mikitayasiulevich.data.model.RestaurantModel
+import com.mikitayasiulevich.data.model.tables.RestaurantTable
+import com.mikitayasiulevich.domain.repository.RestaurantRepository
+import com.mikitayasiulevich.plugins.DatabaseFactory.dbQuery
+import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+
+class RestaurantRepositoryImpl : RestaurantRepository {
+    override suspend fun addRestaurant(restaurantModel: RestaurantModel) {
+        dbQuery {
+            RestaurantTable.insert { table ->
+                table[restaurantAdmin] = restaurantModel.restaurantAdmin
+                table[restaurantName] = restaurantModel.restaurantName
+                table[restaurantDescription] = restaurantModel.restaurantDescription
+                table[restaurantAddress] = restaurantModel.restaurantAddress
+                table[restaurantCreateDate] = restaurantModel.restaurantCreateDate
+                table[isVerified] = restaurantModel.isVerified
+            }
+        }
+    }
+
+    override suspend fun getAllRestaurants(): List<RestaurantModel> {
+        return dbQuery {
+            RestaurantTable.selectAll().mapNotNull { rowToRestaurant(it) }
+        }
+    }
+
+    override suspend fun getRestaurantById(restaurantId: Int): RestaurantModel? {
+        return dbQuery {
+            RestaurantTable.selectAll().where { RestaurantTable.id.eq(restaurantId) }
+                .map { rowToRestaurant(row = it) }
+                .singleOrNull()
+        }
+    }
+
+    override suspend fun updateRestaurant(restaurantModel: RestaurantModel, restaurantAdminId: Int) {
+        dbQuery {
+            RestaurantTable.update(where = {
+                RestaurantTable.restaurantAdmin.eq(restaurantAdminId) and RestaurantTable.id.eq(restaurantModel.id)
+            }) { table ->
+                table[restaurantAdmin] = restaurantAdminId
+                table[restaurantName] = restaurantModel.restaurantName
+                table[restaurantDescription] = restaurantModel.restaurantDescription
+                table[restaurantAddress] = restaurantModel.restaurantAddress
+                table[restaurantCreateDate] = restaurantModel.restaurantCreateDate
+                table[isVerified] = restaurantModel.isVerified
+            }
+        }
+    }
+
+    override suspend fun deleteRestaurant(restaurantId: Int, restaurantAdminId: Int) {
+        dbQuery {
+            RestaurantTable.deleteWhere { id.eq(restaurantId) and restaurantAdmin.eq(restaurantAdminId) }
+        }
+    }
+
+    private fun rowToRestaurant(row: ResultRow?): RestaurantModel? {
+        if (row == null) return null
+
+        return RestaurantModel(
+            id = row[RestaurantTable.id],
+            restaurantAdmin = row[RestaurantTable.restaurantAdmin],
+            restaurantName = row[RestaurantTable.restaurantName],
+            restaurantDescription = row[RestaurantTable.restaurantDescription],
+            restaurantAddress = row[RestaurantTable.restaurantAddress],
+            restaurantCreateDate = row[RestaurantTable.restaurantCreateDate],
+            isVerified = row[RestaurantTable.isVerified],
+        )
+    }
+}

@@ -10,6 +10,7 @@ object RestaurantTable: Table() {
     val restaurantDescription: Column<String> = varchar("restaurant_description", 500)
     val restaurantAddress: Column<String> = varchar("restaurant_address", 70)
     val restaurantCreateDate: Column<String> = varchar("restaurant_create_date", 20)
+    val isVerified: Column<Boolean> = bool("is_restaurant_verified")
 
     override val primaryKey: PrimaryKey = PrimaryKey(id)
 }
