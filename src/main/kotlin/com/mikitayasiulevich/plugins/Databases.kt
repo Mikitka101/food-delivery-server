@@ -1,52 +1,59 @@
 package com.mikitayasiulevich.plugins
 
-import io.ktor.http.*
+import com.mikitayasiulevich.data.model.tables.DishTable
+import com.mikitayasiulevich.data.model.tables.RestaurantTable
+import com.mikitayasiulevich.data.model.tables.UserTable
+import com.typesafe.config.ConfigFactory
+import com.zaxxer.hikari.HikariConfig
+import com.zaxxer.hikari.HikariDataSource
 import io.ktor.server.application.*
-import io.ktor.server.request.*
-import io.ktor.server.response.*
-import io.ktor.server.routing.*
-import org.jetbrains.exposed.sql.*
+import io.ktor.server.config.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import org.jetbrains.exposed.sql.Database
+import org.jetbrains.exposed.sql.SchemaUtils
+import org.jetbrains.exposed.sql.transactions.transaction
 
-fun Application.configureDatabases() {
-    val database = Database.connect(
-        url = "jdbc:h2:mem:test;DB_CLOSE_DELAY=-1",
-        user = "root",
-        driver = "org.h2.Driver",
-        password = "",
-    )
-    val userService = UserService(database)
-    routing {
-        // Create user
-        post("/users") {
-            val user = call.receive<ExposedUser>()
-            val id = userService.create(user)
-            call.respond(HttpStatusCode.Created, id)
-        }
+object DatabaseFactory {
 
-        // Read user
-        get("/users/{id}") {
-            val id = call.parameters["id"]?.toInt() ?: throw IllegalArgumentException("Invalid ID")
-            val user = userService.read(id)
-            if (user != null) {
-                call.respond(HttpStatusCode.OK, user)
-            } else {
-                call.respond(HttpStatusCode.NotFound)
-            }
-        }
+    private val AppConfig = HoconApplicationConfig(ConfigFactory.load())
+    private val dbUrl = System.getenv("DB_POSTGRES_URL")
+    private val dbUser = System.getenv("DB_POSTGRES_USER")
+    private val dbPassword = System.getenv("DB_POSTGRES_PASSWORD")
 
-        // Update user
-        put("/users/{id}") {
-            val id = call.parameters["id"]?.toInt() ?: throw IllegalArgumentException("Invalid ID")
-            val user = call.receive<ExposedUser>()
-            userService.update(id, user)
-            call.respond(HttpStatusCode.OK)
-        }
+    fun Application.initializationDatabase() {
+        Database.connect(getHikariDatasource())
 
-        // Delete user
-        delete("/users/{id}") {
-            val id = call.parameters["id"]?.toInt() ?: throw IllegalArgumentException("Invalid ID")
-            userService.delete(id)
-            call.respond(HttpStatusCode.OK)
+        transaction {
+            SchemaUtils.create(
+                UserTable,
+                DishTable,
+                RestaurantTable
+            )
         }
     }
+
+    private fun getHikariDatasource(): HikariDataSource {
+        println("DB URL: $dbUrl")
+        println("DB USER: $dbUser")
+
+        val config = HikariConfig()
+        config.driverClassName = "org.postgresql.Driver"
+
+        config.jdbcUrl = dbUrl
+        config.username = dbUser
+        config.password = dbPassword
+        config.maximumPoolSize = 3
+        config.isAutoCommit = false
+        config.transactionIsolation = "TRANSACTION_REPEATABLE_READ"
+        config.validate()
+        return HikariDataSource(config)
+    }
+
+    suspend fun <T> dbQuery(block: () -> T): T {
+        return withContext(Dispatchers.IO) {
+            transaction { block() }
+        }
+    }
+
 }

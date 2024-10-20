@@ -1,6 +1,7 @@
 package com.mikitayasiulevich
 
 import com.mikitayasiulevich.plugins.*
+import com.mikitayasiulevich.plugins.DatabaseFactory.initializationDatabase
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
@@ -11,9 +12,12 @@ fun main() {
 }
 
 fun Application.module() {
-    configureSecurity()
+    initializationDatabase()
     configureMonitoring()
     configureSerialization()
-    configureDatabases()
+    configureSecurity()
+
+    /*
     configureRouting()
+    */
 }
