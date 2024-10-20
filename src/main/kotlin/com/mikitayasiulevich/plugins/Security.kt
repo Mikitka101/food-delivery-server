@@ -19,5 +19,4 @@ fun Application.configureSecurity(userUseCase: UserUseCase) {
             }
         }
     }
-
 }
