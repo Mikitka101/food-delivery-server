@@ -9,8 +9,10 @@ import com.mikitayasiulevich.data.model.responses.BaseResponse
 import com.mikitayasiulevich.domain.usecase.UserUseCase
 import com.mikitayasiulevich.utils.Constants.Error.GENERAL
 import com.mikitayasiulevich.utils.Constants.Error.INCORRECT_PASSWORD
+import com.mikitayasiulevich.utils.Constants.Error.USER_NOT_FOUND
 import com.mikitayasiulevich.utils.Constants.Error.WRONG_EMAIL
 import io.ktor.http.*
+import io.ktor.server.auth.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
@@ -66,6 +68,23 @@ fun Route.UserRoute(userUseCase: UserUseCase) {
         } ?: run {
             call.respond(HttpStatusCode.BadRequest, BaseResponse(success = false, GENERAL))
             return@post
+        }
+    }
+
+    authenticate("jwt") {
+
+        get("api/v1/get-user-info") {
+            try {
+                val user = call.principal<UserModel>()
+
+                if (user != null) {
+                    call.respond(HttpStatusCode.OK, user)
+                } else {
+                    call.respond(HttpStatusCode.Conflict, BaseResponse(false, USER_NOT_FOUND))
+                }
+            } catch (e: Exception) {
+                call.respond(HttpStatusCode.BadRequest, BaseResponse(success = false, e.message ?: GENERAL))
+            }
         }
     }
 }

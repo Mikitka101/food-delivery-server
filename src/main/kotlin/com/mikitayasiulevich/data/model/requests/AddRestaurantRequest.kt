@@ -1,11 +1,10 @@
-package com.mikitayasiulevich.data.model
+package com.mikitayasiulevich.data.model.requests
 
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class RestaurantModel(
-    val id: Int,
-    val restaurantAdmin: Int,
+data class AddRestaurantRequest(
+    val id: Int? = null,
     val restaurantName: String,
     val restaurantDescription: String,
     val restaurantAddress: String,
