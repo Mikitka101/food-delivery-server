@@ -27,17 +27,18 @@ class JwtService(
             .withIssuer(issuer)
             .build()
 
-    fun createAccessToken(login: String): String =
-        createJwtToken(login, 86_400_000) // 24 hours
+    fun createAccessToken(login: String, role: String): String =
+        createJwtToken(login, role, 86_400_000) // 24 hours
 
-    fun createRefreshToken(login: String): String =
-        createJwtToken(login, 7_776_000_000) // 90 days
+    fun createRefreshToken(login: String, role: String): String =
+        createJwtToken(login, role, 7_776_000_000) // 90 days
 
-    private fun createJwtToken(login: String, expireIn: Long): String =
+    private fun createJwtToken(login: String, roles: String, expireIn: Long): String =
         JWT.create()
             .withAudience(audience)
             .withIssuer(issuer)
             .withClaim("login", login)
+            .withClaim("roles", roles)
             .withExpiresAt(Date(System.currentTimeMillis() + expireIn))
             .sign(algorithm)
 

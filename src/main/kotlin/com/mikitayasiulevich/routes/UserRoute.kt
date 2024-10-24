@@ -3,9 +3,12 @@ package com.mikitayasiulevich.routes
 import com.mikitayasiulevich.data.model.RoleModel
 import com.mikitayasiulevich.data.model.UserModel
 import com.mikitayasiulevich.data.model.getStringByRole
+import com.mikitayasiulevich.data.model.requests.GetUserByIdRequest
 import com.mikitayasiulevich.data.model.requests.RegisterRequest
 import com.mikitayasiulevich.data.model.responses.UserResponse
 import com.mikitayasiulevich.domain.usecase.UserUseCase
+import com.mikitayasiulevich.utils.Constants
+import com.mikitayasiulevich.utils.authorized
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
@@ -34,29 +37,49 @@ fun Route.userRoute(userUseCase: UserUseCase) {
     }
 
     authenticate {
-        get {
-            val users = userUseCase.findAllUsers()
+        authorized(Constants.Role.MODERATOR) {
+            get {
+                val users = userUseCase.findAllUsers()
 
-            call.respond(
-                message = users.map(UserModel::toResponse)
-            )
+                call.respond(
+                    message = users.map(UserModel::toResponse)
+                )
+            }
         }
     }
 
-    authenticate("another-auth") {
-        get("/{id}") {
-            val id: String = call.parameters["id"]
-                ?: return@get call.respond(HttpStatusCode.BadRequest)
+    authenticate {
+        authorized(Constants.Role.MODERATOR) {
+            get("/get-user-info") {
+                val getUserByIdRequest = call.receive<GetUserByIdRequest>()
+                val id: String = getUserByIdRequest.id
 
-            val foundUser = userUseCase.findUserById(id)
-                ?: return@get call.respond(HttpStatusCode.NotFound)
+                val foundUser = userUseCase.findUserById(id)
+                    ?: return@get call.respond(HttpStatusCode.NotFound)
 
-            if (foundUser.login != extractPrincipalLogin(call))
-                return@get call.respond(HttpStatusCode.NotFound)
+                call.respond(
+                    message = foundUser.toResponse()
+                )
+            }
+        }
+    }
 
-            call.respond(
-                message = foundUser.toResponse()
-            )
+    authenticate {
+        authorized(
+            Constants.Role.MODERATOR,
+            Constants.Role.ADMIN,
+            Constants.Role.CLIENT,
+            Constants.Role.COURIER
+        ) {
+            get("/get-personal-data") {
+
+                val foundUser = userUseCase.findUserByLogin(extractPrincipalLogin(call) ?: "")
+                    ?: return@get call.respond(HttpStatusCode.NotFound)
+
+                call.respond(
+                    message = foundUser.toResponse()
+                )
+            }
         }
     }
 }
