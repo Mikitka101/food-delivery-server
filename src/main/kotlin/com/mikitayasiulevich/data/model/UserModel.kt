@@ -5,5 +5,6 @@ import java.util.*
 data class UserModel(
     val id: UUID,
     val login: String,
-    val password: String
+    val password: String,
+    val roles: List<RoleModel>
 )

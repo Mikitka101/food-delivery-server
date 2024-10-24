@@ -2,6 +2,7 @@ package com.mikitayasiulevich.plugins
 
 import com.mikitayasiulevich.data.model.tables.DishTable
 import com.mikitayasiulevich.data.model.tables.RestaurantTable
+import com.mikitayasiulevich.data.model.tables.UserRolesTable
 import com.mikitayasiulevich.data.model.tables.UserTable
 import com.typesafe.config.ConfigFactory
 import com.zaxxer.hikari.HikariConfig
@@ -27,6 +28,7 @@ object DatabaseFactory {
         transaction {
             SchemaUtils.create(
                 UserTable,
+                UserRolesTable,
                 DishTable,
                 RestaurantTable
             )

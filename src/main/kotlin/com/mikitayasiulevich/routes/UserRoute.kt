@@ -1,6 +1,8 @@
 package com.mikitayasiulevich.routes
 
+import com.mikitayasiulevich.data.model.RoleModel
 import com.mikitayasiulevich.data.model.UserModel
+import com.mikitayasiulevich.data.model.getStringByRole
 import com.mikitayasiulevich.data.model.requests.RegisterRequest
 import com.mikitayasiulevich.data.model.responses.UserResponse
 import com.mikitayasiulevich.domain.usecase.UserUseCase
@@ -63,13 +65,15 @@ private fun RegisterRequest.toModel(): UserModel =
     UserModel(
         id = UUID.randomUUID(),
         login = this.login,
-        password = this.password
+        password = this.password,
+        roles = listOf(RoleModel.CLIENT)
     )
 
 private fun UserModel.toResponse(): UserResponse =
     UserResponse(
         id = this.id,
         login = this.login,
+        roles = this.roles.map { it.getStringByRole() }
     )
 
 private fun extractPrincipalLogin(call: ApplicationCall): String? =

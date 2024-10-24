@@ -3,6 +3,7 @@ package com.mikitayasiulevich
 import com.mikitayasiulevich.auth.JwtService
 import com.mikitayasiulevich.data.repository.RefreshTokenRepositoryImpl
 import com.mikitayasiulevich.data.repository.RestaurantRepositoryImpl
+import com.mikitayasiulevich.data.repository.RoleRepositoryImpl
 import com.mikitayasiulevich.data.repository.UserRepositoryImpl
 import com.mikitayasiulevich.domain.usecase.RestaurantUseCase
 import com.mikitayasiulevich.domain.usecase.UserUseCase
@@ -18,7 +19,8 @@ fun main() {
 }
 
 fun Application.module() {
-    val userRepository = UserRepositoryImpl()
+    val roleRepository = RoleRepositoryImpl()
+    val userRepository = UserRepositoryImpl(roleRepository)
     val jwtService = JwtService(userRepository)
     val refreshTokenRepositoryImpl = RefreshTokenRepositoryImpl()
     val restaurantRepository = RestaurantRepositoryImpl()

@@ -9,4 +9,5 @@ data class UserResponse(
     @Serializable(with = UUIDSerializer::class)
     val id: UUID,
     val login: String,
+    val roles: List<String>
 )
