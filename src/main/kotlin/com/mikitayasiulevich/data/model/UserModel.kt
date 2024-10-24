@@ -1,16 +1,9 @@
 package com.mikitayasiulevich.data.model
 
-import io.ktor.server.auth.*
-import kotlinx.serialization.Serializable
+import java.util.*
 
-@Serializable
 data class UserModel(
-    val id: Int,
-    val email: String,
+    val id: UUID,
     val login: String,
-    val password: String,
-    val firstName: String,
-    val lastName: String,
-    val isActive: Boolean = false,
-    val role: RoleModel,
-): Principal
+    val password: String
+)

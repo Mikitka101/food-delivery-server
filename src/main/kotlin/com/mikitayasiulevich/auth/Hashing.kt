@@ -1,4 +1,4 @@
-package com.mikitayasiulevich.authentification
+package com.mikitayasiulevich.auth
 
 import io.ktor.util.*
 import javax.crypto.Mac

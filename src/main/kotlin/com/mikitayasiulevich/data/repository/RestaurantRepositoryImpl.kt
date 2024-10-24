@@ -6,6 +6,7 @@ import com.mikitayasiulevich.domain.repository.RestaurantRepository
 import com.mikitayasiulevich.plugins.DatabaseFactory.dbQuery
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import java.util.*
 
 class RestaurantRepositoryImpl : RestaurantRepository {
     override suspend fun addRestaurant(restaurantModel: RestaurantModel) {
@@ -35,7 +36,7 @@ class RestaurantRepositoryImpl : RestaurantRepository {
         }
     }
 
-    override suspend fun updateRestaurant(restaurantModel: RestaurantModel, restaurantAdminId: Int) {
+    override suspend fun updateRestaurant(restaurantModel: RestaurantModel, restaurantAdminId: UUID) {
         dbQuery {
             RestaurantTable.update(where = {
                 RestaurantTable.restaurantAdmin.eq(restaurantAdminId) and RestaurantTable.id.eq(restaurantModel.id)
@@ -50,7 +51,7 @@ class RestaurantRepositoryImpl : RestaurantRepository {
         }
     }
 
-    override suspend fun deleteRestaurant(restaurantId: Int, restaurantAdminId: Int) {
+    override suspend fun deleteRestaurant(restaurantId: Int, restaurantAdminId: UUID) {
         dbQuery {
             RestaurantTable.deleteWhere { id.eq(restaurantId) and restaurantAdmin.eq(restaurantAdminId) }
         }

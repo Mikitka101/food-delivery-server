@@ -1,21 +1,29 @@
 package com.mikitayasiulevich.plugins
 
-import com.mikitayasiulevich.domain.usecase.UserUseCase
+import com.mikitayasiulevich.auth.JwtService
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
 
-fun Application.configureSecurity(userUseCase: UserUseCase) {
-
+fun Application.configureSecurity(
+    jwtService: JwtService
+) {
     authentication {
-        jwt("jwt") {
-            verifier(userUseCase.getJwtVerifier())
-            realm = "Food Delivery Service Server"
-            validate {
-                val payload = it.payload
-                val email = payload.getClaim("email").asString()
-                val user = userUseCase.findUserByEmail(email)
-                user
+        jwt {
+            realm = jwtService.realm
+            verifier(jwtService.jwtVerifier)
+
+            validate { credential ->
+                jwtService.customValidator(credential)
+            }
+        }
+
+        jwt("another-auth") {
+            realm = jwtService.realm
+            verifier(jwtService.jwtVerifier)
+
+            validate { credential ->
+                jwtService.customValidator(credential)
             }
         }
     }

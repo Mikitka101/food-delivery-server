@@ -17,11 +17,11 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
-fun Route.RestaurantRoute(restaurantUseCase: RestaurantUseCase) {
+fun Route.restaurantRoute(restaurantUseCase: RestaurantUseCase) {
 
-    authenticate("jwt") {
+    authenticate {
 
-        get("api/v1/get-all-restaurants") {
+        get("/get-all-restaurants") {
             try {
                 val restaurants = restaurantUseCase.getAllRestaurants()
                 call.respond(HttpStatusCode.OK, restaurants)
@@ -30,7 +30,7 @@ fun Route.RestaurantRoute(restaurantUseCase: RestaurantUseCase) {
             }
         }
 
-        post("api/v1/create-restaurant") {
+        post("/create-restaurant") {
             call.receiveNullable<AddRestaurantRequest>()?.let { restaurantRequest ->
                 try {
                     val restaurant = RestaurantModel(
@@ -55,7 +55,7 @@ fun Route.RestaurantRoute(restaurantUseCase: RestaurantUseCase) {
             }
         }
 
-        post("api/v1/update-restaurant") {
+        post("/update-restaurant") {
             call.receiveNullable<AddRestaurantRequest>()?.let { restaurantRequest ->
                 try {
                     val adminId = call.principal<UserModel>()!!.id
@@ -81,7 +81,7 @@ fun Route.RestaurantRoute(restaurantUseCase: RestaurantUseCase) {
             }
         }
 
-        delete("api/v1/delete-restaurant") {
+        delete("/delete-restaurant") {
             call.request.queryParameters[Constants.Value.ID]?.toInt()?.let { id ->
                 try {
                     val adminId = call.principal<UserModel>()!!.id

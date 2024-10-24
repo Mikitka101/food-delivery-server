@@ -1,6 +1,7 @@
 package com.mikitayasiulevich.domain.repository
 
 import com.mikitayasiulevich.data.model.RestaurantModel
+import java.util.*
 
 interface RestaurantRepository {
 
@@ -10,7 +11,7 @@ interface RestaurantRepository {
 
     suspend fun getRestaurantById(restaurantId: Int): RestaurantModel?
 
-    suspend fun updateRestaurant(restaurantModel: RestaurantModel, restaurantAdminId: Int)
+    suspend fun updateRestaurant(restaurantModel: RestaurantModel, restaurantAdminId: UUID)
 
-    suspend fun deleteRestaurant(restaurantId: Int, restaurantAdminId: Int)
+    suspend fun deleteRestaurant(restaurantId: Int, restaurantAdminId: UUID)
 }

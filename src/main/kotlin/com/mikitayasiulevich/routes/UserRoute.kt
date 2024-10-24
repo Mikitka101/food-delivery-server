@@ -1,90 +1,80 @@
 package com.mikitayasiulevich.routes
 
-import com.mikitayasiulevich.authentification.hash
 import com.mikitayasiulevich.data.model.UserModel
-import com.mikitayasiulevich.data.model.getRoleByString
-import com.mikitayasiulevich.data.model.requests.LoginRequest
 import com.mikitayasiulevich.data.model.requests.RegisterRequest
-import com.mikitayasiulevich.data.model.responses.BaseResponse
+import com.mikitayasiulevich.data.model.responses.UserResponse
 import com.mikitayasiulevich.domain.usecase.UserUseCase
-import com.mikitayasiulevich.utils.Constants.Error.GENERAL
-import com.mikitayasiulevich.utils.Constants.Error.INCORRECT_PASSWORD
-import com.mikitayasiulevich.utils.Constants.Error.USER_NOT_FOUND
-import com.mikitayasiulevich.utils.Constants.Error.WRONG_EMAIL
 import io.ktor.http.*
+import io.ktor.server.application.*
 import io.ktor.server.auth.*
+import io.ktor.server.auth.jwt.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import java.util.*
 
-fun Route.UserRoute(userUseCase: UserUseCase) {
+fun Route.userRoute(userUseCase: UserUseCase) {
 
-    val hashFunction = { p: String -> hash(password = p) }
+    post("/register") {
+        val registerRequest = call.receive<RegisterRequest>()
 
-    post("api/v1/signup") {
-        call.receiveNullable<RegisterRequest>()?.let { registerRequest ->
-            try {
-                val user = UserModel(
-                    id = 0,
-                    email = registerRequest.email.trim().lowercase(),
-                    login = registerRequest.login,
-                    password = hashFunction(registerRequest.password.trim()),
-                    firstName = registerRequest.firstName,
-                    lastName = registerRequest.lastName,
-                    isActive = false,
-                    role = registerRequest.role.trim().getRoleByString()
-                )
+        val createdUser = userUseCase.createUser(
+            userModel = registerRequest.toModel()
+        ) ?: return@post call.respond(HttpStatusCode.BadRequest)
 
-                userUseCase.createUser(user)
-                call.respond(HttpStatusCode.OK, BaseResponse(true, userUseCase.generateToken(userModel = user)))
+        call.response.header(
+            name = "id",
+            value = createdUser.id.toString()
+        )
+        call.respond(
+            message = HttpStatusCode.Created
+        )
+    }
 
-            } catch (e: Exception) {
-                call.respond(HttpStatusCode.Conflict, BaseResponse(false, e.message ?: GENERAL))
-            }
-        } ?: run {
-            call.respond(HttpStatusCode.BadRequest, BaseResponse(success = false, GENERAL))
-            return@post
+    authenticate {
+        get {
+            val users = userUseCase.findAllUsers()
+
+            call.respond(
+                message = users.map(UserModel::toResponse)
+            )
         }
     }
 
-    post("api/v1/login") {
-        call.receiveNullable<LoginRequest>()?.let { loginRequest ->
-            try {
-                val user = userUseCase.findUserByEmail(loginRequest.email.trim().lowercase())
+    authenticate("another-auth") {
+        get("/{id}") {
+            val id: String = call.parameters["id"]
+                ?: return@get call.respond(HttpStatusCode.BadRequest)
 
-                if (user == null) {
-                    call.respond(HttpStatusCode.Conflict, BaseResponse(false, WRONG_EMAIL))
-                } else {
-                    if (user.password == hashFunction(loginRequest.password)) {
-                        call.respond(HttpStatusCode.OK, BaseResponse(true, userUseCase.generateToken(userModel = user)))
-                    } else {
-                        call.respond(HttpStatusCode.BadRequest, BaseResponse(success = false, INCORRECT_PASSWORD))
-                    }
-                }
+            val foundUser = userUseCase.findUserById(id)
+                ?: return@get call.respond(HttpStatusCode.NotFound)
 
-            } catch (e: Exception) {
-                call.respond(HttpStatusCode.Conflict, BaseResponse(false, e.message ?: GENERAL))
-            }
-        } ?: run {
-            call.respond(HttpStatusCode.BadRequest, BaseResponse(success = false, GENERAL))
-            return@post
-        }
-    }
+            if (foundUser.login != extractPrincipalLogin(call))
+                return@get call.respond(HttpStatusCode.NotFound)
 
-    authenticate("jwt") {
-
-        get("api/v1/get-user-info") {
-            try {
-                val user = call.principal<UserModel>()
-
-                if (user != null) {
-                    call.respond(HttpStatusCode.OK, user)
-                } else {
-                    call.respond(HttpStatusCode.Conflict, BaseResponse(false, USER_NOT_FOUND))
-                }
-            } catch (e: Exception) {
-                call.respond(HttpStatusCode.BadRequest, BaseResponse(success = false, e.message ?: GENERAL))
-            }
+            call.respond(
+                message = foundUser.toResponse()
+            )
         }
     }
 }
+
+private fun RegisterRequest.toModel(): UserModel =
+    UserModel(
+        id = UUID.randomUUID(),
+        login = this.login,
+        password = this.password
+    )
+
+private fun UserModel.toResponse(): UserResponse =
+    UserResponse(
+        id = this.id,
+        login = this.login,
+    )
+
+private fun extractPrincipalLogin(call: ApplicationCall): String? =
+    call.principal<JWTPrincipal>()
+        ?.payload
+        ?.getClaim("login")
+        ?.asString()
+

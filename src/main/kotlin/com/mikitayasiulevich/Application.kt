@@ -1,6 +1,7 @@
 package com.mikitayasiulevich
 
-import com.mikitayasiulevich.authentification.JwtService
+import com.mikitayasiulevich.auth.JwtService
+import com.mikitayasiulevich.data.repository.RefreshTokenRepositoryImpl
 import com.mikitayasiulevich.data.repository.RestaurantRepositoryImpl
 import com.mikitayasiulevich.data.repository.UserRepositoryImpl
 import com.mikitayasiulevich.domain.usecase.RestaurantUseCase
@@ -17,16 +18,17 @@ fun main() {
 }
 
 fun Application.module() {
-    val jwtService = JwtService()
     val userRepository = UserRepositoryImpl()
+    val jwtService = JwtService(userRepository)
+    val refreshTokenRepositoryImpl = RefreshTokenRepositoryImpl()
     val restaurantRepository = RestaurantRepositoryImpl()
-    val userUseCase = UserUseCase(userRepository, jwtService)
+    val userUseCase = UserUseCase(userRepository, refreshTokenRepositoryImpl, jwtService)
     val restaurantUseCase = RestaurantUseCase(restaurantRepository)
 
 
     initializationDatabase()
     configureMonitoring()
     configureSerialization()
-    configureSecurity(userUseCase)
+    configureSecurity(jwtService)
     configureRouting(userUseCase, restaurantUseCase)
 }
