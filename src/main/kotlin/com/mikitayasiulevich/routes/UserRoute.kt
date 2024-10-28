@@ -3,7 +3,7 @@ package com.mikitayasiulevich.routes
 import com.mikitayasiulevich.data.model.RoleModel
 import com.mikitayasiulevich.data.model.UserModel
 import com.mikitayasiulevich.data.model.getStringByRole
-import com.mikitayasiulevich.data.model.requests.GetUserByIdRequest
+import com.mikitayasiulevich.data.model.requests.IdRequest
 import com.mikitayasiulevich.data.model.requests.RegisterRequest
 import com.mikitayasiulevich.data.model.responses.UserResponse
 import com.mikitayasiulevich.domain.usecase.UserUseCase
@@ -51,7 +51,7 @@ fun Route.userRoute(userUseCase: UserUseCase) {
     authenticate {
         authorized(Constants.Role.MODERATOR) {
             get("/get-user-info") {
-                val getUserByIdRequest = call.receive<GetUserByIdRequest>()
+                val getUserByIdRequest = call.receive<IdRequest>()
                 val id: String = getUserByIdRequest.id
 
                 val foundUser = userUseCase.findUserById(id)

@@ -1,104 +1,97 @@
 package com.mikitayasiulevich.routes
 
 import com.mikitayasiulevich.data.model.RestaurantModel
-import com.mikitayasiulevich.data.model.UserModel
-import com.mikitayasiulevich.data.model.requests.AddRestaurantRequest
+import com.mikitayasiulevich.data.model.requests.CreateRestaurantRequest
+import com.mikitayasiulevich.data.model.requests.IdAndAdminIdRequest
+import com.mikitayasiulevich.data.model.requests.UpdateRestaurantRequest
 import com.mikitayasiulevich.data.model.responses.BaseResponse
 import com.mikitayasiulevich.domain.usecase.RestaurantUseCase
 import com.mikitayasiulevich.utils.Constants
-import com.mikitayasiulevich.utils.Constants.Error.GENERAL
-import com.mikitayasiulevich.utils.Constants.Error.MISSING_FIELDS
-import com.mikitayasiulevich.utils.Constants.Success.RESTAURANT_ADDED_SUCCESSFULLY
+import com.mikitayasiulevich.utils.Constants.Success.RESTAURANT_CREATED_SUCCESSFULLY
 import com.mikitayasiulevich.utils.Constants.Success.RESTAURANT_DELETED_SUCCESSFULLY
 import com.mikitayasiulevich.utils.Constants.Success.RESTAURANT_UPDATED_SUCCESSFULLY
+import com.mikitayasiulevich.utils.authorized
 import io.ktor.http.*
 import io.ktor.server.auth.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
+import java.util.*
 
 fun Route.restaurantRoute(restaurantUseCase: RestaurantUseCase) {
 
     authenticate {
-
-        get("/get-all-restaurants") {
-            try {
-                val restaurants = restaurantUseCase.getAllRestaurants()
-                call.respond(HttpStatusCode.OK, restaurants)
-            } catch (e: Exception) {
-                call.respond(HttpStatusCode.Conflict, BaseResponse(false, e.message ?: GENERAL))
+        authorized(
+            Constants.Role.MODERATOR,
+            Constants.Role.ADMIN,
+            Constants.Role.CLIENT,
+            Constants.Role.COURIER
+        ) {
+            get {
+                val restaurantsList = restaurantUseCase.getAllRestaurants()
+                //println(Json.encodeToString(restaurantsList))
+                call.respond(HttpStatusCode.OK, restaurantsList)
             }
         }
+    }
+    authenticate {
+        authorized(
+            Constants.Role.ADMIN
+        ) {
+            post("/create-restaurant") {
+                val createRestaurantRequest = call.receive<CreateRestaurantRequest>()
 
-        post("/create-restaurant") {
-            call.receiveNullable<AddRestaurantRequest>()?.let { restaurantRequest ->
-                try {
-                    val restaurant = RestaurantModel(
-                        id = 0,
-                        restaurantAdmin = call.principal<UserModel>()!!.id,
-                        restaurantName = restaurantRequest.restaurantName,
-                        restaurantDescription = restaurantRequest.restaurantDescription,
-                        restaurantAddress = restaurantRequest.restaurantAddress,
-                        restaurantCreateDate = restaurantRequest.restaurantCreateDate,
-                        isVerified = restaurantRequest.isVerified
-                    )
+                restaurantUseCase.createRestaurant(
+                    restaurantModel = createRestaurantRequest.toModel()
+                ) ?: return@post call.respond(HttpStatusCode.BadRequest)
 
-                    restaurantUseCase.addRestaurant(restaurant)
-                    call.respond(HttpStatusCode.OK, BaseResponse(true, RESTAURANT_ADDED_SUCCESSFULLY))
-
-                } catch (e: Exception) {
-                    call.respond(HttpStatusCode.Conflict, BaseResponse(false, e.message ?: GENERAL))
-                }
-            } ?: run {
-                call.respond(HttpStatusCode.BadRequest, BaseResponse(success = false, MISSING_FIELDS))
-                return@post
+                call.respond(HttpStatusCode.OK, BaseResponse(true, RESTAURANT_CREATED_SUCCESSFULLY))
             }
-        }
 
-        post("/update-restaurant") {
-            call.receiveNullable<AddRestaurantRequest>()?.let { restaurantRequest ->
-                try {
-                    val adminId = call.principal<UserModel>()!!.id
-                    val restaurant = RestaurantModel(
-                        id = restaurantRequest.id ?: 0,
-                        restaurantAdmin = adminId,
-                        restaurantName = restaurantRequest.restaurantName,
-                        restaurantDescription = restaurantRequest.restaurantDescription,
-                        restaurantAddress = restaurantRequest.restaurantAddress,
-                        restaurantCreateDate = restaurantRequest.restaurantCreateDate,
-                        isVerified = restaurantRequest.isVerified
-                    )
+            post("/update-restaurant") {
+                val updateRestaurantRequest = call.receive<UpdateRestaurantRequest>()
 
-                    restaurantUseCase.updateRestaurant(restaurant, adminId)
-                    call.respond(HttpStatusCode.OK, BaseResponse(true, RESTAURANT_UPDATED_SUCCESSFULLY))
+                restaurantUseCase.updateRestaurant(
+                    restaurantModel = updateRestaurantRequest.toModel(),
+                    restaurantAdminId = UUID.fromString(updateRestaurantRequest.restaurantAdmin)
+                )
 
-                } catch (e: Exception) {
-                    call.respond(HttpStatusCode.Conflict, BaseResponse(false, e.message ?: GENERAL))
-                }
-            } ?: run {
-                call.respond(HttpStatusCode.BadRequest, BaseResponse(success = false, MISSING_FIELDS))
-                return@post
+                call.respond(HttpStatusCode.OK, BaseResponse(true, RESTAURANT_UPDATED_SUCCESSFULLY))
             }
-        }
 
-        delete("/delete-restaurant") {
-            call.request.queryParameters[Constants.Value.ID]?.toInt()?.let { id ->
-                try {
-                    val adminId = call.principal<UserModel>()!!.id
+            delete("/delete-restaurant") {
+                val deleteRestaurantRequest = call.receive<IdAndAdminIdRequest>()
+                val id: UUID = UUID.fromString(deleteRestaurantRequest.id)
+                val adminId: UUID = UUID.fromString(deleteRestaurantRequest.adminId)
 
-                    restaurantUseCase.deleteRestaurant(
-                        restaurantId = id,
-                        restaurantAdminId = adminId
-                    )
-                    call.respond(HttpStatusCode.OK, BaseResponse(true, RESTAURANT_DELETED_SUCCESSFULLY))
+                restaurantUseCase.deleteRestaurant(id, adminId)
 
-                } catch (e: Exception) {
-                    call.respond(HttpStatusCode.Conflict, BaseResponse(false, e.message ?: GENERAL))
-                }
-            } ?: run {
-                call.respond(HttpStatusCode.BadRequest, BaseResponse(success = false, MISSING_FIELDS))
-                return@delete
+                call.respond(HttpStatusCode.OK, BaseResponse(true, RESTAURANT_DELETED_SUCCESSFULLY))
             }
         }
     }
 }
+
+private fun CreateRestaurantRequest.toModel(): RestaurantModel =
+    RestaurantModel(
+        id = UUID.randomUUID(),
+        restaurantAdmin = UUID.fromString(this.restaurantAdmin),
+        restaurantName = this.restaurantName,
+        restaurantAddress = this.restaurantAddress,
+        restaurantDescription = this.restaurantDescription,
+        restaurantCreateDate = this.restaurantCreateDate,
+        isVerified = false
+    )
+
+private fun UpdateRestaurantRequest.toModel(): RestaurantModel =
+    RestaurantModel(
+        id = UUID.fromString(this.id),
+        restaurantAdmin = UUID.fromString(this.restaurantAdmin),
+        restaurantName = this.restaurantName,
+        restaurantAddress = this.restaurantAddress,
+        restaurantDescription = this.restaurantDescription,
+        restaurantCreateDate = this.restaurantCreateDate,
+        isVerified = false
+    )

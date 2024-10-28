@@ -18,7 +18,7 @@ class Constants {
     }
 
     object Success {
-        const val RESTAURANT_ADDED_SUCCESSFULLY = "Restaurant successfully added"
+        const val RESTAURANT_CREATED_SUCCESSFULLY = "Restaurant successfully added"
         const val RESTAURANT_UPDATED_SUCCESSFULLY = "Restaurant successfully updated"
         const val RESTAURANT_DELETED_SUCCESSFULLY = "Restaurant successfully deleted"
     }

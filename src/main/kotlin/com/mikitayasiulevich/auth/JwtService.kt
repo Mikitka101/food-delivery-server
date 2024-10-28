@@ -28,7 +28,7 @@ class JwtService(
             .build()
 
     fun createAccessToken(login: String, role: String): String =
-        createJwtToken(login, role, 86_400_000) // 24 hours
+        createJwtToken(login, role, 86_400_000) // 86_400_000 - 24 hours
 
     fun createRefreshToken(login: String, role: String): String =
         createJwtToken(login, role, 7_776_000_000) // 90 days

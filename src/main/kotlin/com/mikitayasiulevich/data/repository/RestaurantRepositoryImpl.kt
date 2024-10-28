@@ -1,6 +1,7 @@
 package com.mikitayasiulevich.data.repository
 
 import com.mikitayasiulevich.data.model.RestaurantModel
+import com.mikitayasiulevich.data.model.RestaurantsListModel
 import com.mikitayasiulevich.data.model.tables.RestaurantTable
 import com.mikitayasiulevich.domain.repository.RestaurantRepository
 import com.mikitayasiulevich.plugins.DatabaseFactory.dbQuery
@@ -12,6 +13,7 @@ class RestaurantRepositoryImpl : RestaurantRepository {
     override suspend fun addRestaurant(restaurantModel: RestaurantModel) {
         dbQuery {
             RestaurantTable.insert { table ->
+                table[id] = restaurantModel.id
                 table[restaurantAdmin] = restaurantModel.restaurantAdmin
                 table[restaurantName] = restaurantModel.restaurantName
                 table[restaurantDescription] = restaurantModel.restaurantDescription
@@ -22,15 +24,23 @@ class RestaurantRepositoryImpl : RestaurantRepository {
         }
     }
 
-    override suspend fun getAllRestaurants(): List<RestaurantModel> {
+    override suspend fun getAllRestaurants(): RestaurantsListModel {
         return dbQuery {
-            RestaurantTable.selectAll().mapNotNull { rowToRestaurant(it) }
+            RestaurantsListModel(RestaurantTable.selectAll().mapNotNull { rowToRestaurant(it) })
         }
     }
 
-    override suspend fun getRestaurantById(restaurantId: Int): RestaurantModel? {
+    override suspend fun getRestaurantById(restaurantId: UUID): RestaurantModel? {
         return dbQuery {
             RestaurantTable.selectAll().where { RestaurantTable.id.eq(restaurantId) }
+                .map { rowToRestaurant(row = it) }
+                .singleOrNull()
+        }
+    }
+
+    override suspend fun getRestaurantByName(restaurantName: String): RestaurantModel? {
+        return dbQuery {
+            RestaurantTable.selectAll().where { RestaurantTable.restaurantName.eq(restaurantName) }
                 .map { rowToRestaurant(row = it) }
                 .singleOrNull()
         }
@@ -51,7 +61,7 @@ class RestaurantRepositoryImpl : RestaurantRepository {
         }
     }
 
-    override suspend fun deleteRestaurant(restaurantId: Int, restaurantAdminId: UUID) {
+    override suspend fun deleteRestaurant(restaurantId: UUID, restaurantAdminId: UUID) {
         dbQuery {
             RestaurantTable.deleteWhere { id.eq(restaurantId) and restaurantAdmin.eq(restaurantAdminId) }
         }

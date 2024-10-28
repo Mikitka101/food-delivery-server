@@ -5,7 +5,7 @@ import org.jetbrains.exposed.sql.Table
 import java.util.*
 
 object RestaurantTable: Table() {
-    val id: Column<Int> = integer("restaurant_id").autoIncrement()
+    val id: Column<UUID> = uuid("restaurant_id")
     val restaurantAdmin: Column<UUID> = uuid("restaurant_admin").references(UserTable.id)
     val restaurantName: Column<String> = varchar("restaurant_name", 100)
     val restaurantDescription: Column<String> = varchar("restaurant_description", 500)

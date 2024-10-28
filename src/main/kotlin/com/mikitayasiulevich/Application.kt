@@ -5,6 +5,7 @@ import com.mikitayasiulevich.data.repository.RefreshTokenRepositoryImpl
 import com.mikitayasiulevich.data.repository.RestaurantRepositoryImpl
 import com.mikitayasiulevich.data.repository.RoleRepositoryImpl
 import com.mikitayasiulevich.data.repository.UserRepositoryImpl
+import com.mikitayasiulevich.domain.usecase.ImageUseCase
 import com.mikitayasiulevich.domain.usecase.RestaurantUseCase
 import com.mikitayasiulevich.domain.usecase.UserUseCase
 import com.mikitayasiulevich.plugins.*
@@ -26,11 +27,12 @@ fun Application.module() {
     val restaurantRepository = RestaurantRepositoryImpl()
     val userUseCase = UserUseCase(userRepository, refreshTokenRepositoryImpl, jwtService)
     val restaurantUseCase = RestaurantUseCase(restaurantRepository)
+    val imageUseCase = ImageUseCase()
 
 
     initializationDatabase()
     configureMonitoring()
     configureSerialization()
     configureSecurity(jwtService)
-    configureRouting(userUseCase, restaurantUseCase)
+    configureRouting(userUseCase, restaurantUseCase, imageUseCase)
 }
