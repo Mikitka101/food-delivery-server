@@ -3,7 +3,7 @@ package com.mikitayasiulevich.auth
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
 import com.auth0.jwt.interfaces.JWTVerifier
-import com.mikitayasiulevich.data.model.UserModel
+import com.mikitayasiulevich.data.model.UserDBModel
 import com.mikitayasiulevich.domain.repository.UserRepository
 import io.ktor.server.auth.jwt.*
 import java.util.*
@@ -47,7 +47,7 @@ class JwtService(
         credential: JWTCredential,
     ): JWTPrincipal? {
         val login: String? = extractLogin(credential)
-        val foundUser: UserModel? = login?.let {
+        val foundUser: UserDBModel? = login?.let {
             userRepository.getUserByLogin(it)
         }
 

@@ -1,7 +1,7 @@
 package com.mikitayasiulevich.data.repository
 
-import com.mikitayasiulevich.data.model.UserModel
-import com.mikitayasiulevich.data.model.tables.UserTable
+import com.mikitayasiulevich.data.model.UserDBModel
+import com.mikitayasiulevich.data.database.tables.UserTable
 import com.mikitayasiulevich.domain.repository.RoleRepository
 import com.mikitayasiulevich.domain.repository.UserRepository
 import com.mikitayasiulevich.plugins.DatabaseFactory.dbQuery
@@ -14,20 +14,20 @@ class UserRepositoryImpl(
     private val roleRepository: RoleRepository
 ) : UserRepository {
 
-    override suspend fun getAllUsers(): List<UserModel> {
+    override suspend fun getAllUsers(): List<UserDBModel> {
         val foundUsersList = dbQuery {
             UserTable.selectAll().mapNotNull {
                 rowToUser(row = it)
             }
         }
-        val usersWithRoles = mutableListOf<UserModel>()
+        val usersWithRoles = mutableListOf<UserDBModel>()
         foundUsersList.forEach { user ->
             usersWithRoles.add(user.copy(roles = roleRepository.getUserRoles(user.id)))
         }
         return usersWithRoles
     }
 
-    override suspend fun getUserById(id: UUID): UserModel? {
+    override suspend fun getUserById(id: UUID): UserDBModel? {
         var foundUser = dbQuery {
             UserTable.selectAll().where { UserTable.id.eq(id) }
                 .map { rowToUser(row = it) }
@@ -39,7 +39,7 @@ class UserRepositoryImpl(
         return foundUser
     }
 
-    override suspend fun getUserByLogin(login: String): UserModel? {
+    override suspend fun getUserByLogin(login: String): UserDBModel? {
         var foundUser = dbQuery {
             UserTable.selectAll().where { UserTable.login.eq(login) }
                 .map { rowToUser(row = it) }
@@ -51,26 +51,32 @@ class UserRepositoryImpl(
         return foundUser
     }
 
-    override suspend fun insertUser(userModel: UserModel) {
+    override suspend fun insertUser(userDBModel: UserDBModel) {
         dbQuery {
             UserTable.insert { table ->
-                table[id] = userModel.id
-                table[login] = userModel.login
-                table[password] = userModel.password
+                table[id] = userDBModel.id
+                table[login] = userDBModel.login
+                table[name] = userDBModel.name
+                table[password] = userDBModel.password
+                //table[address] = userDBModel.address
+                table[banned] = userDBModel.banned
             }
         }
-        userModel.roles.forEach {
-            roleRepository.addRoleToUser(userModel.id, it)
+        userDBModel.roles.forEach {
+            roleRepository.addRoleToUser(userDBModel.id, it)
         }
     }
 
-    private fun rowToUser(row: ResultRow?): UserModel? {
+    private fun rowToUser(row: ResultRow?): UserDBModel? {
         if (row == null)
             return null
-        return UserModel(
+        return UserDBModel(
             id = row[UserTable.id],
             login = row[UserTable.login],
             password = row[UserTable.password],
+            name = row[UserTable.name],
+            banned = row[UserTable.banned],
+            //address = row[UserTable.address],
             roles = emptyList()
         )
     }

@@ -1,18 +1,17 @@
 package com.mikitayasiulevich.plugins
 
+import com.mikitayasiulevich.domain.usecase.DishUseCase
 import com.mikitayasiulevich.domain.usecase.ImageUseCase
 import com.mikitayasiulevich.domain.usecase.RestaurantUseCase
 import com.mikitayasiulevich.domain.usecase.UserUseCase
-import com.mikitayasiulevich.routes.authRoute
-import com.mikitayasiulevich.routes.imageRoute
-import com.mikitayasiulevich.routes.restaurantRoute
-import com.mikitayasiulevich.routes.userRoute
+import com.mikitayasiulevich.routes.*
 import io.ktor.server.application.*
 import io.ktor.server.routing.*
 
 fun Application.configureRouting(
     userUseCase: UserUseCase,
     restaurantUseCase: RestaurantUseCase,
+    dishUseCase: DishUseCase,
     imageUseCase: ImageUseCase
 ) {
 
@@ -27,12 +26,15 @@ fun Application.configureRouting(
         }
 
         route("/api/v1/restaurants") {
-            restaurantRoute(restaurantUseCase = restaurantUseCase)
+            restaurantRoute(restaurantUseCase = restaurantUseCase, userUseCase = userUseCase)
         }
 
         route("/api/v1/images") {
             imageRoute(imageUseCase = imageUseCase)
         }
-    }
 
+        route("/api/v1/dishes") {
+            dishRoute(dishUseCase = dishUseCase, userUseCase = userUseCase)
+        }
+    }
 }

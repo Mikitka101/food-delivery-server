@@ -20,7 +20,7 @@ fun Route.authRoute(userUseCase: UserUseCase) {
         authResponse?.let {
             call.respond(authResponse)
         } ?: call.respond(
-            message = HttpStatusCode.Unauthorized
+            message = HttpStatusCode.NotFound
         )
     }
 

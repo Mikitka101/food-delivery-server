@@ -1,14 +1,12 @@
-package com.mikitayasiulevich.data.model.responses
+package com.mikitayasiulevich.domain.model
 
 import com.mikitayasiulevich.utils.UUIDSerializer
 import kotlinx.serialization.Serializable
 import java.util.*
 
 @Serializable
-data class UserResponse(
+data class Photo (
     @Serializable(with = UUIDSerializer::class)
     val id: UUID,
-    val login: String,
-    val name: String,
-    val roles: List<String>
+    val url: String
 )

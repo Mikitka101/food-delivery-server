@@ -4,10 +4,9 @@ import kotlinx.serialization.Serializable
 import java.util.*
 
 @Serializable
-data class CreateRestaurantRequest(
+data class CreateDishRequest(
     val photo: String,
     val description: String,
-    val category: String,
     val name: String,
-    val address: String,
+    val price: Float
 )

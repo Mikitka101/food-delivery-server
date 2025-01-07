@@ -1,7 +1,7 @@
 package com.mikitayasiulevich.routes
 
 import com.mikitayasiulevich.data.model.RoleModel
-import com.mikitayasiulevich.data.model.UserModel
+import com.mikitayasiulevich.data.model.UserDBModel
 import com.mikitayasiulevich.data.model.getStringByRole
 import com.mikitayasiulevich.data.model.requests.IdRequest
 import com.mikitayasiulevich.data.model.requests.RegisterRequest
@@ -24,7 +24,7 @@ fun Route.userRoute(userUseCase: UserUseCase) {
         val registerRequest = call.receive<RegisterRequest>()
 
         val createdUser = userUseCase.createUser(
-            userModel = registerRequest.toModel()
+            registerRequest = registerRequest
         ) ?: return@post call.respond(HttpStatusCode.BadRequest)
 
         call.response.header(
@@ -42,7 +42,7 @@ fun Route.userRoute(userUseCase: UserUseCase) {
                 val users = userUseCase.findAllUsers()
 
                 call.respond(
-                    message = users.map(UserModel::toResponse)
+                    message = users.map(UserDBModel::toResponse)
                 )
             }
         }
@@ -84,18 +84,11 @@ fun Route.userRoute(userUseCase: UserUseCase) {
     }
 }
 
-private fun RegisterRequest.toModel(): UserModel =
-    UserModel(
-        id = UUID.randomUUID(),
-        login = this.login,
-        password = this.password,
-        roles = listOf(RoleModel.CLIENT)
-    )
-
-private fun UserModel.toResponse(): UserResponse =
+private fun UserDBModel.toResponse(): UserResponse =
     UserResponse(
         id = this.id,
         login = this.login,
+        name = this.name,
         roles = this.roles.map { it.getStringByRole() }
     )
 

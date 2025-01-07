@@ -1,20 +1,22 @@
 package com.mikitayasiulevich.domain.repository
 
-import com.mikitayasiulevich.data.model.RestaurantModel
-import com.mikitayasiulevich.data.model.RestaurantsListModel
+import com.mikitayasiulevich.data.model.RestaurantDBModel
+import com.mikitayasiulevich.data.model.requests.CreateRestaurantRequest
 import java.util.*
 
 interface RestaurantRepository {
 
-    suspend fun addRestaurant(restaurantModel: RestaurantModel)
+    suspend fun addRestaurant(restaurantDBModel: RestaurantDBModel)
 
-    suspend fun getAllRestaurants(): RestaurantsListModel
+    suspend fun getAllRestaurants(): List<RestaurantDBModel>
 
-    suspend fun getRestaurantById(restaurantId: UUID): RestaurantModel?
+    suspend fun getRestaurantById(restaurantId: UUID): RestaurantDBModel?
 
-    suspend fun getRestaurantByName(restaurantName: String): RestaurantModel?
+    suspend fun getRestaurantByName(restaurantName: String): RestaurantDBModel?
 
-    suspend fun updateRestaurant(restaurantModel: RestaurantModel, restaurantAdminId: UUID)
+    suspend fun getRestaurantByAdmin(adminId: UUID): RestaurantDBModel?
 
-    suspend fun deleteRestaurant(restaurantId: UUID, restaurantAdminId: UUID)
+    suspend fun updateRestaurant(restaurantDBModel: RestaurantDBModel, adminId: UUID)
+
+    suspend fun deleteRestaurant(restaurantId: UUID)
 }

@@ -1,9 +1,6 @@
 package com.mikitayasiulevich.plugins
 
-import com.mikitayasiulevich.data.model.tables.DishTable
-import com.mikitayasiulevich.data.model.tables.RestaurantTable
-import com.mikitayasiulevich.data.model.tables.UserRolesTable
-import com.mikitayasiulevich.data.model.tables.UserTable
+import com.mikitayasiulevich.data.database.tables.*
 import com.typesafe.config.ConfigFactory
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
@@ -30,7 +27,16 @@ object DatabaseFactory {
                 UserTable,
                 UserRolesTable,
                 DishTable,
-                RestaurantTable
+                RestaurantTable,
+                AddressTable,
+                CardTable,
+                CategoryTable,
+                DescriptionTable,
+                OrderTable,
+                PhotoTable,
+                ReviewTable,
+                RoleTable,
+                OrdersDishesTable
             )
         }
     }

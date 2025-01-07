@@ -1,8 +1,9 @@
 package com.mikitayasiulevich.data.repository
 
-import com.mikitayasiulevich.data.model.RestaurantModel
-import com.mikitayasiulevich.data.model.RestaurantsListModel
-import com.mikitayasiulevich.data.model.tables.RestaurantTable
+import com.mikitayasiulevich.data.model.RestaurantDBModel
+import com.mikitayasiulevich.data.database.tables.RestaurantTable
+import com.mikitayasiulevich.data.model.CategoryDBModel
+import com.mikitayasiulevich.data.model.requests.CreateRestaurantRequest
 import com.mikitayasiulevich.domain.repository.RestaurantRepository
 import com.mikitayasiulevich.plugins.DatabaseFactory.dbQuery
 import org.jetbrains.exposed.sql.*
@@ -10,27 +11,30 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import java.util.*
 
 class RestaurantRepositoryImpl : RestaurantRepository {
-    override suspend fun addRestaurant(restaurantModel: RestaurantModel) {
+
+    override suspend fun addRestaurant(restaurantDBModel: RestaurantDBModel) {
         dbQuery {
             RestaurantTable.insert { table ->
-                table[id] = restaurantModel.id
-                table[restaurantAdmin] = restaurantModel.restaurantAdmin
-                table[restaurantName] = restaurantModel.restaurantName
-                table[restaurantDescription] = restaurantModel.restaurantDescription
-                table[restaurantAddress] = restaurantModel.restaurantAddress
-                table[restaurantCreateDate] = restaurantModel.restaurantCreateDate
-                table[isVerified] = restaurantModel.isVerified
+                table[id] = restaurantDBModel.id
+                table[admin] = restaurantDBModel.admin
+                table[photo] = restaurantDBModel.photo
+                table[description] = restaurantDBModel.description
+                //table[category] = restaurantDBModel.category
+                table[address] = restaurantDBModel.address
+                table[name] = restaurantDBModel.name
+                table[active] = true
+                table[banned] = false
             }
         }
     }
 
-    override suspend fun getAllRestaurants(): RestaurantsListModel {
+    override suspend fun getAllRestaurants(): List<RestaurantDBModel> {
         return dbQuery {
-            RestaurantsListModel(RestaurantTable.selectAll().mapNotNull { rowToRestaurant(it) })
+            RestaurantTable.selectAll().mapNotNull { rowToRestaurant(it) }
         }
     }
 
-    override suspend fun getRestaurantById(restaurantId: UUID): RestaurantModel? {
+    override suspend fun getRestaurantById(restaurantId: UUID): RestaurantDBModel? {
         return dbQuery {
             RestaurantTable.selectAll().where { RestaurantTable.id.eq(restaurantId) }
                 .map { rowToRestaurant(row = it) }
@@ -38,46 +42,58 @@ class RestaurantRepositoryImpl : RestaurantRepository {
         }
     }
 
-    override suspend fun getRestaurantByName(restaurantName: String): RestaurantModel? {
+    override suspend fun getRestaurantByName(restaurantName: String): RestaurantDBModel? {
         return dbQuery {
-            RestaurantTable.selectAll().where { RestaurantTable.restaurantName.eq(restaurantName) }
+            RestaurantTable.selectAll().where { RestaurantTable.name.eq(restaurantName) }
                 .map { rowToRestaurant(row = it) }
                 .singleOrNull()
         }
     }
 
-    override suspend fun updateRestaurant(restaurantModel: RestaurantModel, restaurantAdminId: UUID) {
+    override suspend fun getRestaurantByAdmin(adminId: UUID): RestaurantDBModel? {
+        return dbQuery {
+            RestaurantTable.selectAll().where { RestaurantTable.admin.eq(adminId) }
+                .map { rowToRestaurant(row = it) }
+                .singleOrNull()
+        }
+    }
+
+    override suspend fun updateRestaurant(restaurantDBModel: RestaurantDBModel, adminId: UUID) {
+
+        val foundRestaurant = getRestaurantByAdmin(adminId) ?: return
+
         dbQuery {
             RestaurantTable.update(where = {
-                RestaurantTable.restaurantAdmin.eq(restaurantAdminId) and RestaurantTable.id.eq(restaurantModel.id)
+                RestaurantTable.id.eq(foundRestaurant.id)
             }) { table ->
-                table[restaurantAdmin] = restaurantAdminId
-                table[restaurantName] = restaurantModel.restaurantName
-                table[restaurantDescription] = restaurantModel.restaurantDescription
-                table[restaurantAddress] = restaurantModel.restaurantAddress
-                table[restaurantCreateDate] = restaurantModel.restaurantCreateDate
-                table[isVerified] = restaurantModel.isVerified
+                table[photo] = restaurantDBModel.photo
+                table[description] = restaurantDBModel.description
+                //table[category] = restaurantDBModel.category
+                table[name] = restaurantDBModel.name
+                table[banned] = false
             }
         }
     }
 
-    override suspend fun deleteRestaurant(restaurantId: UUID, restaurantAdminId: UUID) {
+    override suspend fun deleteRestaurant(restaurantId: UUID) {
         dbQuery {
-            RestaurantTable.deleteWhere { id.eq(restaurantId) and restaurantAdmin.eq(restaurantAdminId) }
+            RestaurantTable.deleteWhere { id.eq(restaurantId) }
         }
     }
 
-    private fun rowToRestaurant(row: ResultRow?): RestaurantModel? {
+    private fun rowToRestaurant(row: ResultRow?): RestaurantDBModel? {
         if (row == null) return null
 
-        return RestaurantModel(
+        return RestaurantDBModel(
             id = row[RestaurantTable.id],
-            restaurantAdmin = row[RestaurantTable.restaurantAdmin],
-            restaurantName = row[RestaurantTable.restaurantName],
-            restaurantDescription = row[RestaurantTable.restaurantDescription],
-            restaurantAddress = row[RestaurantTable.restaurantAddress],
-            restaurantCreateDate = row[RestaurantTable.restaurantCreateDate],
-            isVerified = row[RestaurantTable.isVerified],
+            admin = row[RestaurantTable.admin],
+            photo = row[RestaurantTable.photo],
+            description = row[RestaurantTable.description],
+            address = row[RestaurantTable.address],
+            //category = row[RestaurantTable.category],
+            name = row[RestaurantTable.name],
+            active = row[RestaurantTable.active],
+            banned = row[RestaurantTable.banned],
         )
     }
 }

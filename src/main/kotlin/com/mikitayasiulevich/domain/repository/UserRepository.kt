@@ -1,15 +1,15 @@
 package com.mikitayasiulevich.domain.repository
 
-import com.mikitayasiulevich.data.model.UserModel
+import com.mikitayasiulevich.data.model.UserDBModel
 import java.util.*
 
 interface UserRepository {
 
-    suspend fun getAllUsers(): List<UserModel>
+    suspend fun getAllUsers(): List<UserDBModel>
 
-    suspend fun getUserById(id: UUID): UserModel?
+    suspend fun getUserById(id: UUID): UserDBModel?
 
-    suspend fun getUserByLogin(login: String): UserModel?
+    suspend fun getUserByLogin(login: String): UserDBModel?
 
-    suspend fun insertUser(userModel: UserModel)
+    suspend fun insertUser(userDBModel: UserDBModel)
 }

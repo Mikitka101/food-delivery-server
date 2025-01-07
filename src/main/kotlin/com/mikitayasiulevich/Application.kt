@@ -1,10 +1,9 @@
 package com.mikitayasiulevich
 
 import com.mikitayasiulevich.auth.JwtService
-import com.mikitayasiulevich.data.repository.RefreshTokenRepositoryImpl
-import com.mikitayasiulevich.data.repository.RestaurantRepositoryImpl
-import com.mikitayasiulevich.data.repository.RoleRepositoryImpl
-import com.mikitayasiulevich.data.repository.UserRepositoryImpl
+import com.mikitayasiulevich.data.repository.*
+import com.mikitayasiulevich.domain.repository.DishRepository
+import com.mikitayasiulevich.domain.usecase.DishUseCase
 import com.mikitayasiulevich.domain.usecase.ImageUseCase
 import com.mikitayasiulevich.domain.usecase.RestaurantUseCase
 import com.mikitayasiulevich.domain.usecase.UserUseCase
@@ -25,14 +24,20 @@ fun Application.module() {
     val jwtService = JwtService(userRepository)
     val refreshTokenRepositoryImpl = RefreshTokenRepositoryImpl()
     val restaurantRepository = RestaurantRepositoryImpl()
-    val userUseCase = UserUseCase(userRepository, refreshTokenRepositoryImpl, jwtService)
-    val restaurantUseCase = RestaurantUseCase(restaurantRepository)
-    val imageUseCase = ImageUseCase()
+    val dishRepository = DishRepositoryImpl()
+    val addressRepository = AddressRepositoryImpl()
+    val descriptionRepository = DescriptionRepositoryImpl()
+    val categoryRepository = CategoryRepositoryImpl()
+    val photoRepository = PhotoRepositoryImpl()
+    val userUseCase = UserUseCase(userRepository, refreshTokenRepositoryImpl, addressRepository, jwtService)
+    val restaurantUseCase = RestaurantUseCase(restaurantRepository, photoRepository, addressRepository, descriptionRepository, categoryRepository)
+    val dishUseCase = DishUseCase(dishRepository, restaurantRepository, photoRepository, descriptionRepository)
+    val imageUseCase = ImageUseCase(photoRepository)
 
 
     initializationDatabase()
     configureMonitoring()
     configureSerialization()
     configureSecurity(jwtService)
-    configureRouting(userUseCase, restaurantUseCase, imageUseCase)
+    configureRouting(userUseCase, restaurantUseCase, dishUseCase, imageUseCase)
 }

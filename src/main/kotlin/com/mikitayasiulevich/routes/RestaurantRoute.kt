@@ -1,26 +1,29 @@
 package com.mikitayasiulevich.routes
 
-import com.mikitayasiulevich.data.model.RestaurantModel
 import com.mikitayasiulevich.data.model.requests.CreateRestaurantRequest
-import com.mikitayasiulevich.data.model.requests.IdAndAdminIdRequest
-import com.mikitayasiulevich.data.model.requests.UpdateRestaurantRequest
+import com.mikitayasiulevich.data.model.requests.IdRequest
 import com.mikitayasiulevich.data.model.responses.BaseResponse
+import com.mikitayasiulevich.domain.model.RestaurantList
 import com.mikitayasiulevich.domain.usecase.RestaurantUseCase
+import com.mikitayasiulevich.domain.usecase.UserUseCase
 import com.mikitayasiulevich.utils.Constants
 import com.mikitayasiulevich.utils.Constants.Success.RESTAURANT_CREATED_SUCCESSFULLY
 import com.mikitayasiulevich.utils.Constants.Success.RESTAURANT_DELETED_SUCCESSFULLY
 import com.mikitayasiulevich.utils.Constants.Success.RESTAURANT_UPDATED_SUCCESSFULLY
 import com.mikitayasiulevich.utils.authorized
 import io.ktor.http.*
+import io.ktor.server.application.*
 import io.ktor.server.auth.*
+import io.ktor.server.auth.jwt.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 import java.util.*
 
-fun Route.restaurantRoute(restaurantUseCase: RestaurantUseCase) {
+fun Route.restaurantRoute(
+    restaurantUseCase: RestaurantUseCase,
+    userUseCase: UserUseCase
+) {
 
     authenticate {
         authorized(
@@ -30,9 +33,17 @@ fun Route.restaurantRoute(restaurantUseCase: RestaurantUseCase) {
             Constants.Role.COURIER
         ) {
             get {
-                val restaurantsList = restaurantUseCase.getAllRestaurants()
-                //println(Json.encodeToString(restaurantsList))
-                call.respond(HttpStatusCode.OK, restaurantsList)
+                val restaurantsListObj = RestaurantList(restaurantUseCase.getAllRestaurants())
+                call.respond(HttpStatusCode.OK, restaurantsListObj)
+            }
+            post("/restaurant-info") {
+                val restaurantRequest = call.receive<IdRequest>()
+
+                val foundRestaurant =
+                    restaurantUseCase.getRestaurantById(restaurantId = UUID.fromString(restaurantRequest.id))
+                        ?: return@post call.respond(HttpStatusCode.NotFound)
+
+                call.respond(HttpStatusCode.OK, foundRestaurant)
             }
         }
     }
@@ -43,30 +54,35 @@ fun Route.restaurantRoute(restaurantUseCase: RestaurantUseCase) {
             post("/create-restaurant") {
                 val createRestaurantRequest = call.receive<CreateRestaurantRequest>()
 
+                val foundUser = userUseCase.findUserByLogin(extractPrincipalLogin(call) ?: "")
+                    ?: return@post call.respond(HttpStatusCode.NotFound)
+
                 restaurantUseCase.createRestaurant(
-                    restaurantModel = createRestaurantRequest.toModel()
+                    createRestaurantRequest, foundUser.id
                 ) ?: return@post call.respond(HttpStatusCode.BadRequest)
 
                 call.respond(HttpStatusCode.OK, BaseResponse(true, RESTAURANT_CREATED_SUCCESSFULLY))
             }
 
             post("/update-restaurant") {
-                val updateRestaurantRequest = call.receive<UpdateRestaurantRequest>()
+                val createRestaurantRequest = call.receive<CreateRestaurantRequest>()
+
+                val foundUser = userUseCase.findUserByLogin(extractPrincipalLogin(call) ?: "")
+                    ?: return@post call.respond(HttpStatusCode.NotFound)
 
                 restaurantUseCase.updateRestaurant(
-                    restaurantModel = updateRestaurantRequest.toModel(),
-                    restaurantAdminId = UUID.fromString(updateRestaurantRequest.restaurantAdmin)
+                    createRestaurantRequest = createRestaurantRequest,
+                    adminId = foundUser.id,
                 )
 
                 call.respond(HttpStatusCode.OK, BaseResponse(true, RESTAURANT_UPDATED_SUCCESSFULLY))
             }
 
             delete("/delete-restaurant") {
-                val deleteRestaurantRequest = call.receive<IdAndAdminIdRequest>()
+                val deleteRestaurantRequest = call.receive<IdRequest>()
                 val id: UUID = UUID.fromString(deleteRestaurantRequest.id)
-                val adminId: UUID = UUID.fromString(deleteRestaurantRequest.adminId)
 
-                restaurantUseCase.deleteRestaurant(id, adminId)
+                restaurantUseCase.deleteRestaurant(id)
 
                 call.respond(HttpStatusCode.OK, BaseResponse(true, RESTAURANT_DELETED_SUCCESSFULLY))
             }
@@ -74,24 +90,8 @@ fun Route.restaurantRoute(restaurantUseCase: RestaurantUseCase) {
     }
 }
 
-private fun CreateRestaurantRequest.toModel(): RestaurantModel =
-    RestaurantModel(
-        id = UUID.randomUUID(),
-        restaurantAdmin = UUID.fromString(this.restaurantAdmin),
-        restaurantName = this.restaurantName,
-        restaurantAddress = this.restaurantAddress,
-        restaurantDescription = this.restaurantDescription,
-        restaurantCreateDate = this.restaurantCreateDate,
-        isVerified = false
-    )
-
-private fun UpdateRestaurantRequest.toModel(): RestaurantModel =
-    RestaurantModel(
-        id = UUID.fromString(this.id),
-        restaurantAdmin = UUID.fromString(this.restaurantAdmin),
-        restaurantName = this.restaurantName,
-        restaurantAddress = this.restaurantAddress,
-        restaurantDescription = this.restaurantDescription,
-        restaurantCreateDate = this.restaurantCreateDate,
-        isVerified = false
-    )
+private fun extractPrincipalLogin(call: ApplicationCall): String? =
+    call.principal<JWTPrincipal>()
+        ?.payload
+        ?.getClaim("login")
+        ?.asString()
