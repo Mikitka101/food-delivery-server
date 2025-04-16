@@ -3,7 +3,6 @@ package com.mikitayasiulevich.data.repository
 import com.mikitayasiulevich.data.database.tables.DishTable
 import com.mikitayasiulevich.data.model.RestaurantDBModel
 import com.mikitayasiulevich.data.database.tables.RestaurantTable
-import com.mikitayasiulevich.data.model.CategoryDBModel
 import com.mikitayasiulevich.data.model.DishDBModel
 import com.mikitayasiulevich.data.model.requests.CreateRestaurantRequest
 import com.mikitayasiulevich.domain.repository.DishRepository
@@ -75,6 +74,7 @@ class DishRepositoryImpl : DishRepository {
             description = row[DishTable.description],
             name = row[DishTable.name],
             price = row[DishTable.price],
+            weight = row[DishTable.weight],
             active = row[DishTable.active],
             banned = row[DishTable.banned],
         )

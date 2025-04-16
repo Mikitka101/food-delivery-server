@@ -1,6 +1,6 @@
 package com.mikitayasiulevich.data.repository
 
-import com.mikitayasiulevich.data.model.RoleModel
+import com.mikitayasiulevich.data.model.Role
 import com.mikitayasiulevich.data.model.getRoleById
 import com.mikitayasiulevich.data.database.tables.UserRolesTable
 import com.mikitayasiulevich.domain.repository.RoleRepository
@@ -11,7 +11,7 @@ import java.util.*
 
 class RoleRepositoryImpl : RoleRepository {
 
-    override suspend fun addRoleToUser(userId: UUID, role: RoleModel) {
+    override suspend fun addRoleToUser(userId: UUID, role: Role) {
         dbQuery {
             UserRolesTable.insert { table ->
                 table[UserRolesTable.user] = userId
@@ -20,7 +20,7 @@ class RoleRepositoryImpl : RoleRepository {
         }
     }
 
-    override suspend fun getUserRoles(userId: UUID): List<RoleModel> {
+    override suspend fun getUserRoles(userId: UUID): List<Role> {
         return dbQuery {
             UserRolesTable.selectAll().where { UserRolesTable.user.eq(userId) }
                 .map { it[UserRolesTable.role].getRoleById() }

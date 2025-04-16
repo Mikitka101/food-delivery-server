@@ -39,6 +39,10 @@ class AddressRepositoryImpl : AddressRepository {
         } ?: addAddress("").id
     }
 
+    override suspend fun deleteAddressById(id: UUID) {
+        TODO("Not yet implemented")
+    }
+
     override suspend fun getEmptyAddress(): AddressDBModel {
         return DatabaseFactory.dbQuery {
             AddressTable.selectAll().where { AddressTable.address.eq("") }

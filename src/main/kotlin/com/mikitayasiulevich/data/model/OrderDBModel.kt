@@ -10,11 +10,15 @@ data class OrderDBModel(
     @Serializable(with = UUIDSerializer::class)
     val id: UUID,
     @Serializable(with = UUIDSerializer::class)
-    val user: UUID,
+    val client: UUID,
+    @Serializable(with = UUIDSerializer::class)
+    val courier: UUID,
     @Serializable(with = UUIDSerializer::class)
     val restaurant: UUID,
     @Serializable(with = UUIDSerializer::class)
-    val status: String,
-    val posted: String,
-    val received: String,
+    val address: UUID,
+    @Serializable(with = UUIDSerializer::class)
+    val card: UUID,
+    @Serializable(with = UUIDSerializer::class)
+    val comment: UUID
 )

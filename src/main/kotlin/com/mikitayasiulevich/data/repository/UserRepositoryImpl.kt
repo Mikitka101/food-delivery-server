@@ -67,6 +67,14 @@ class UserRepositoryImpl(
         }
     }
 
+    override suspend fun updateUser(userDBModel: UserDBModel) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun deleteUserById(id: UUID) {
+        TODO("Not yet implemented")
+    }
+
     private fun rowToUser(row: ResultRow?): UserDBModel? {
         if (row == null)
             return null
@@ -76,7 +84,8 @@ class UserRepositoryImpl(
             password = row[UserTable.password],
             name = row[UserTable.name],
             banned = row[UserTable.banned],
-            //address = row[UserTable.address],
+            addresses = emptyList(),
+            cards = emptyList(),
             roles = emptyList()
         )
     }

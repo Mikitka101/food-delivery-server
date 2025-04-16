@@ -8,5 +8,7 @@ data class UserDBModel(
     val password: String,
     val name: String,
     val banned: Boolean,
-    val roles: List<RoleModel>
+    val roles: List<Role>,
+    val addresses: List<AddressDBModel>,
+    val cards: List<CardDBModel>
 )

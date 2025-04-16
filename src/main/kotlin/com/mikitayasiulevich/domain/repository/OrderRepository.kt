@@ -1,5 +1,6 @@
 package com.mikitayasiulevich.domain.repository
 
+import com.mikitayasiulevich.data.model.OrderDBModel
 import com.mikitayasiulevich.data.model.RestaurantDBModel
 import com.mikitayasiulevich.data.model.requests.CreateRestaurantRequest
 import java.util.*

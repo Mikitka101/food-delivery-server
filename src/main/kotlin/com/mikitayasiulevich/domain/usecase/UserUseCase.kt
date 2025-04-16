@@ -3,7 +3,7 @@ package com.mikitayasiulevich.domain.usecase
 import com.auth0.jwt.interfaces.DecodedJWT
 import com.mikitayasiulevich.auth.JwtService
 import com.mikitayasiulevich.auth.hash
-import com.mikitayasiulevich.data.model.RoleModel
+import com.mikitayasiulevich.data.model.Role
 import com.mikitayasiulevich.data.model.UserDBModel
 import com.mikitayasiulevich.data.model.getStringByRole
 import com.mikitayasiulevich.data.model.requests.LoginRequest
@@ -109,8 +109,9 @@ class UserUseCase(
             login = this.login,
             password = this.password,
             name = this.name,
-            //address = address,
-            roles = listOf(RoleModel.CLIENT),
+            addresses = emptyList(),
+            cards = emptyList(),
+            roles = listOf(Role.CLIENT),
             banned = false
         )
 

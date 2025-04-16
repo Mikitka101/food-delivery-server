@@ -16,6 +16,7 @@ data class DishDBModel(
     val description: UUID,
     val name: String,
     val price: Float,
+    val weight: Int,
     val active: Boolean,
     val banned: Boolean
 )

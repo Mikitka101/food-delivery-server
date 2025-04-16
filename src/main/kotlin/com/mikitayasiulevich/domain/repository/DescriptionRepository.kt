@@ -3,6 +3,7 @@ package com.mikitayasiulevich.domain.repository
 import com.mikitayasiulevich.data.database.tables.AddressTable
 import com.mikitayasiulevich.data.model.AddressDBModel
 import com.mikitayasiulevich.data.model.DescriptionDBModel
+import com.mikitayasiulevich.data.model.StepModel
 import com.mikitayasiulevich.plugins.DatabaseFactory
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.selectAll
@@ -16,4 +17,8 @@ interface DescriptionRepository {
     suspend fun getEmptyDescriptionId(): UUID
 
     suspend fun getEmptyDescription(): DescriptionDBModel
+
+    suspend fun deleteDescriptionById(id: UUID)
+
+    suspend fun updateDescription(description: DescriptionDBModel)
 }

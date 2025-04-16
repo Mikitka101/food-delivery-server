@@ -9,8 +9,10 @@ object DishTable: Table() {
     val restaurant: Column<UUID> = uuid("restaurant").references(RestaurantTable.id)
     val photo: Column<UUID> = uuid("photo").references(PhotoTable.id)
     val description: Column<UUID> = uuid("description").references(DescriptionTable.id)
+    val nutrition: Column<UUID> = uuid("nutrition").references(NutritionalValuesTable.id)
     val name: Column<String> = varchar("name", 100)
     val price: Column<Float> = float("price")
+    val weight: Column<Int> = integer("weight")
     val active: Column<Boolean> = bool("active")
     val banned: Column<Boolean> = bool("banned")
 

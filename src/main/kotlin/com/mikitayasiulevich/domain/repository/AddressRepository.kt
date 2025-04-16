@@ -11,4 +11,6 @@ interface AddressRepository {
     suspend fun getEmptyAddress(): AddressDBModel
 
     suspend fun getEmptyAddressId(): UUID
+
+    suspend fun deleteAddressById(id: UUID)
 }

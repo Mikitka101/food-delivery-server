@@ -12,4 +12,8 @@ interface UserRepository {
     suspend fun getUserByLogin(login: String): UserDBModel?
 
     suspend fun insertUser(userDBModel: UserDBModel)
+
+    suspend fun updateUser(userDBModel: UserDBModel)
+
+    suspend fun deleteUserById(id: UUID)
 }

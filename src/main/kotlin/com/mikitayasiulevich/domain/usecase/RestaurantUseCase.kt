@@ -16,7 +16,7 @@ class RestaurantUseCase(
         val foundRestaurant = restaurantRepository.getRestaurantByName(createRestaurantRequest.name)
         val address = addressRepository.addAddress(createRestaurantRequest.address)
         val description = descriptionRepository.addDescription(createRestaurantRequest.description)
-        val category = categoryRepository.addCategory(createRestaurantRequest.description)
+        //val category = categoryRepository.addCategory(createRestaurantRequest.description)
         return if (foundRestaurant == null) {
             val restaurantDBModel = createRestaurantRequest.toModel(
                 id = UUID.randomUUID(),
@@ -54,7 +54,7 @@ class RestaurantUseCase(
     suspend fun updateRestaurant(createRestaurantRequest: CreateRestaurantRequest, adminId: UUID) {
         val address = addressRepository.addAddress(createRestaurantRequest.address)
         val description = descriptionRepository.addDescription(createRestaurantRequest.description)
-        val category = categoryRepository.addCategory(createRestaurantRequest.description)
+        //val category = categoryRepository.addCategory(createRestaurantRequest.description)
         restaurantRepository.updateRestaurant(
             createRestaurantRequest.toUpdateModel(
                 descriptionId = description.id,

@@ -36,5 +36,17 @@ fun Application.configureRouting(
         route("/api/v1/dishes") {
             dishRoute(dishUseCase = dishUseCase, userUseCase = userUseCase)
         }
+
+        route("/api/v1/orders") {
+            orderRoute()
+        }
+
+        route("/api/v1/addresses") {
+            addressRoute()
+        }
+
+        route("/api/v1/cards") {
+            cardRoute()
+        }
     }
 }

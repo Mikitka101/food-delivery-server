@@ -2,7 +2,6 @@ package com.mikitayasiulevich.data.repository
 
 import com.mikitayasiulevich.data.model.RestaurantDBModel
 import com.mikitayasiulevich.data.database.tables.RestaurantTable
-import com.mikitayasiulevich.data.model.CategoryDBModel
 import com.mikitayasiulevich.data.model.requests.CreateRestaurantRequest
 import com.mikitayasiulevich.domain.repository.RestaurantRepository
 import com.mikitayasiulevich.plugins.DatabaseFactory.dbQuery

@@ -9,11 +9,12 @@ class Constants {
         const val COURIER = "courier"
     }
 
-    object Status {
-        const val POST = "post"
+    object Step {
+        const val CHOICE = "choice"
+        const val CONFIRMATION = "confirmation"
         const val COOK = "cook"
         const val DELIVERY = "delivery"
-        const val COMPLETED = "completed"
+        const val CANCELLATION = "cancellation"
     }
 
     object Error {

@@ -4,7 +4,6 @@ import com.mikitayasiulevich.data.database.tables.*
 import com.typesafe.config.ConfigFactory
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
-import io.ktor.server.application.*
 import io.ktor.server.config.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -19,24 +18,27 @@ object DatabaseFactory {
     private val dbUser = System.getenv("DB_POSTGRES_USER")
     private val dbPassword = System.getenv("DB_POSTGRES_PASSWORD")
 
-    fun Application.initializationDatabase() {
+    fun initializationDatabase() {
         Database.connect(getHikariDatasource())
 
         transaction {
             SchemaUtils.create(
-                UserTable,
-                UserRolesTable,
-                DishTable,
-                RestaurantTable,
                 AddressTable,
                 CardTable,
-                CategoryTable,
                 DescriptionTable,
+                DishTable,
+                NutritionalValuesTable,
+                OrderDishesTable,
+                OrderStepsTable,
                 OrderTable,
                 PhotoTable,
-                ReviewTable,
+                RestaurantTable,
                 RoleTable,
-                OrdersDishesTable
+                StepTable,
+                UserAddressesTable,
+                UserCardsTable,
+                UserRolesTable,
+                UserTable
             )
         }
     }

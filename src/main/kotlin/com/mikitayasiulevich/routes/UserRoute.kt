@@ -1,6 +1,5 @@
 package com.mikitayasiulevich.routes
 
-import com.mikitayasiulevich.data.model.RoleModel
 import com.mikitayasiulevich.data.model.UserDBModel
 import com.mikitayasiulevich.data.model.getStringByRole
 import com.mikitayasiulevich.data.model.requests.IdRequest

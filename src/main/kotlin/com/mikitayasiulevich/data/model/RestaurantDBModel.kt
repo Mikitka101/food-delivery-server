@@ -16,8 +16,6 @@ data class RestaurantDBModel(
     val description: UUID,
     @Serializable(with = UUIDSerializer::class)
     val address: UUID,
-    @Serializable(with = UUIDSerializer::class)
-    //val category: UUID,
     val name: String,
     val active: Boolean,
     val banned: Boolean

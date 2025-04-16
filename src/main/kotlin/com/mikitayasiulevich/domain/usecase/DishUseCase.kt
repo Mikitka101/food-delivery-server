@@ -62,6 +62,7 @@ class DishUseCase(
             description = descriptionId,
             name = this.name,
             price = this.price,
+            weight = 0,
             active = true,
             banned = true
         )
@@ -76,6 +77,7 @@ class DishUseCase(
             description = descriptionId,
             name = this.name,
             price = this.price,
+            weight = 0,
             active = true,
             banned = true
         )

@@ -2,7 +2,6 @@ package com.mikitayasiulevich
 
 import com.mikitayasiulevich.auth.JwtService
 import com.mikitayasiulevich.data.repository.*
-import com.mikitayasiulevich.domain.repository.DishRepository
 import com.mikitayasiulevich.domain.usecase.DishUseCase
 import com.mikitayasiulevich.domain.usecase.ImageUseCase
 import com.mikitayasiulevich.domain.usecase.RestaurantUseCase
@@ -27,10 +26,9 @@ fun Application.module() {
     val dishRepository = DishRepositoryImpl()
     val addressRepository = AddressRepositoryImpl()
     val descriptionRepository = DescriptionRepositoryImpl()
-    val categoryRepository = CategoryRepositoryImpl()
     val photoRepository = PhotoRepositoryImpl()
     val userUseCase = UserUseCase(userRepository, refreshTokenRepositoryImpl, addressRepository, jwtService)
-    val restaurantUseCase = RestaurantUseCase(restaurantRepository, photoRepository, addressRepository, descriptionRepository, categoryRepository)
+    val restaurantUseCase = RestaurantUseCase(restaurantRepository, photoRepository, addressRepository, descriptionRepository)
     val dishUseCase = DishUseCase(dishRepository, restaurantRepository, photoRepository, descriptionRepository)
     val imageUseCase = ImageUseCase(photoRepository)
 

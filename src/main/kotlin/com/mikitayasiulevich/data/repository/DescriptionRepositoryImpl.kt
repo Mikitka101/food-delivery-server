@@ -43,6 +43,14 @@ class DescriptionRepositoryImpl : DescriptionRepository {
         } ?: addDescription("")
     }
 
+    override suspend fun deleteDescriptionById(id: UUID) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun updateDescription(description: DescriptionDBModel) {
+        TODO("Not yet implemented")
+    }
+
     private fun rowToDescription(row: ResultRow?): DescriptionDBModel? {
         if (row == null) return null
 

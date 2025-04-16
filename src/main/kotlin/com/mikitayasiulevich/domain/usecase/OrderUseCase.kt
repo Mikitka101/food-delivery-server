@@ -1,6 +1,6 @@
 package com.mikitayasiulevich.domain.usecase
 
-import com.mikitayasiulevich.data.model.OrderDBModel
+/*import com.mikitayasiulevich.data.model.OrderDBModel
 import com.mikitayasiulevich.data.model.RestaurantDBModel
 import com.mikitayasiulevich.data.model.requests.CreateRestaurantRequest
 import com.mikitayasiulevich.domain.model.Restaurant
@@ -68,4 +68,4 @@ class OrderUseCase(
     suspend fun deleteOrder(restaurantId: UUID) =
         restaurantRepository.deleteRestaurant(restaurantId)
 
-}
+}*/
